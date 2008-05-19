@@ -95,4 +95,7 @@ source "drivers/kvm/Kconfig"
 source "drivers/uio/Kconfig"
 
 source "drivers/virtio/Kconfig"
+
+source "drivers/android/Kconfig"
+
 endmenu

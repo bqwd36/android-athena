@@ -57,6 +57,9 @@ struct resource_list {
 #define IORESOURCE_IRQ_LOWLEVEL		(1<<3)
 #define IORESOURCE_IRQ_SHAREABLE	(1<<4)
 
+/* SoC device IRQ specific bits (IORESOURCE_BITS) */
+#define IORESOURCE_IRQ_SOC_SUBDEVICE    (1<<5)
+
 /* ISA PnP DMA specific bits (IORESOURCE_BITS) */
 #define IORESOURCE_DMA_TYPE_MASK	(3<<0)
 #define IORESOURCE_DMA_8BIT		(0<<0)

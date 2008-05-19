@@ -1,27 +1,11 @@
 if ARCH_PXA
 
+#choice
+	#prompt "Intel PXA2xx/PXA3xx Implementations"
+
 menu "Intel PXA2xx/PXA3xx Implementations"
 
-if PXA3xx
-
-menu "Supported PXA3xx Processor Variants"
-
-config CPU_PXA300
-	bool "PXA300 (codename Monahans-L)"
-
-config CPU_PXA310
-	bool "PXA310 (codename Monahans-LV)"
-	select CPU_PXA300
-
-config CPU_PXA320
-	bool "PXA320 (codename Monahans-P)"
-
-endmenu
-
-endif
-
-choice
-	prompt "Select target board"
+source "arch/arm/mach-pxa/htcathena/Kconfig"
 
 config ARCH_LUBBOCK
 	bool "Intel DBPXA250 Development Platform"
@@ -68,7 +52,25 @@ config MACH_ARMCORE
 	select PXA27x
 	select IWMMXT
 
-endchoice
+#endchoice
+
+if PXA3xx
+
+menu "Supported PXA3xx Processor Variants"
+
+config CPU_PXA300
+	bool "PXA300 (codename Monahans-L)"
+
+config CPU_PXA310
+	bool "PXA310 (codename Monahans-LV)"
+	select CPU_PXA300
+
+config CPU_PXA320
+	bool "PXA320 (codename Monahans-P)"
+
+endmenu
+
+endif
 
 if PXA_SHARPSL
 
@@ -103,7 +105,6 @@ endchoice
 endif
 
 endmenu
-
 config MACH_POODLE
 	bool "Enable Sharp SL-5600 (Poodle) Support"
 	depends on PXA_SHARPSL_25x

@@ -1,0 +1,44 @@
+menuconfig MACH_HTCATHENA
+	bool "HTC Athena"
+	select PXA27x
+	select PXA_SSP
+	select BOARD_IRQ_MAP_BIG
+	select HTC_EGPIO
+	select ADC
+	select ADC_AD7877
+	select TOUCHSCREEN_ADC
+	select FB_HTCATHENA_VSFB
+	#select HTCATHENA_SOUND
+	select MMC_ATIW
+	select KEYBOARD_GPIO
+	help
+		Say Y here if you intend to run this kernel on a
+		HTC Athena. Currently there is only basic support
+		for this phone.
+
+#config HTCATHENA_PHONE
+#	tristate "HTC Athena Phone driver"
+#	depends on MACH_HTCATHENA
+#	help
+#	  Experimental driver for the Athena's MSM6275 UMTS chipset.
+
+config HTCATHENA_SOUND
+	tristate "HTC Athena Audio driver"
+	depends on (MACH_HTCATHENA || MACH_HTCUNIVERSAL) && SND && I2C
+	#select SND_AK4641
+	help
+	  Say Y or M if you have a HTC Universal/Athena or other supported device and want audio support
+
+#config HTCATHENA_BLUETOOTH
+#	tristate "HTC Athena Bluetooth"
+#	depends on MACH_HTCATHENA && HTC_EGPIO
+#	help
+#	  Enables support for the TI BRF6150 Bluetooth Module
+#	  in HTC Athena.
+
+#config HTCATHENA_GPS
+#	tristate "HTC Athena GPS"
+#	depends on MACH_HTCATHENA && HTC_EGPIO
+#	help
+#	  Enables support for the SiRF-3 GPS Module
+#	  in HTC Athena.

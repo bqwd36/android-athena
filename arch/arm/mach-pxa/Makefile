@@ -23,6 +23,9 @@ obj-$(CONFIG_MACH_POODLE)	+= poodle.o corgi_ssp.o
 obj-$(CONFIG_MACH_TOSA)		+= tosa.o
 obj-$(CONFIG_MACH_EM_X270)	+= em-x270.o
 
+# HTC Athena
+obj-$(CONFIG_MACH_HTCATHENA)	+= htcathena/
+
 ifeq ($(CONFIG_MACH_ZYLONITE),y)
   obj-y				+= zylonite.o
   obj-$(CONFIG_CPU_PXA300)	+= zylonite_pxa300.o

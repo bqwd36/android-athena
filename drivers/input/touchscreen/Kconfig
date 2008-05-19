@@ -185,6 +185,18 @@ config TOUCHSCREEN_UCB1400
 	  To compile this driver as a module, choose M here: the
 	  module will be called ucb1400_ts.
 
+config TOUCHSCREEN_ADC
+	tristate "Touchscreen driver for Generic ADC device"
+	depends on ADC
+	help
+	  Touchscreen driver which uses Generic ADC API
+	  (linux/adc.h) to sample TS coordinates. Fully
+	  configurable via platform_data. Includes optional
+	  software debouncing.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called ts_adc.
+
 config TOUCHSCREEN_USB_COMPOSITE
 	tristate "USB Touchscreen Driver"
 	depends on USB_ARCH_HAS_HCD
@@ -242,7 +254,17 @@ config TOUCHSCREEN_USB_DMC_TSC10
 	default y
 	bool "DMC TSC-10/25 device support" if EMBEDDED
 	depends on TOUCHSCREEN_USB_COMPOSITE
+config TOUCHSCREEN_ADC
+        tristate "Touchscreen driver for Generic ADC device"
+	depends on ADC
+	help
+	  Touchscreen driver which uses Generic ADC API
+	  (linux/adc.h) to sample TS coordinates. Fully
+	  configurable via platform_data. Includes optional
+	  software debouncing.
 
+	  To compile this driver as a module, choose M here: the
+	  module will be called ts_adc.
 config TOUCHSCREEN_USB_IRTOUCH
 	default y
 	bool "IRTOUCHSYSTEMS/UNITOP device support" if EMBEDDED
@@ -262,5 +284,4 @@ config TOUCHSCREEN_USB_GOTOP
 	default y
 	bool "GoTop Super_Q2/GogoPen/PenPower tablet device support" if EMBEDDED
 	depends on TOUCHSCREEN_USB_COMPOSITE
-
 endif

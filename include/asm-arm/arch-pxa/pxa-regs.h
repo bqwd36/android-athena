@@ -1229,6 +1229,8 @@
 #define GPIO7_48MHz		7	/* 48 MHz clock output */
 #define GPIO8_MMCCS0		8	/* MMC Chip Select 0 */
 #define GPIO9_MMCCS1		9	/* MMC Chip Select 1 */
+#define GPIO9_KBD_KEY		9	/* Keyboard Key Press */
+#define GPIO10_KBD_IO		10	/* Keyboard Input/Output */
 #define GPIO10_RTCCLK		10	/* real time clock (1 Hz) */
 #define GPIO11_3_6MHz		11	/* 3.6 MHz oscillator out */
 #define GPIO12_32KHz		12	/* 32 kHz out */
@@ -1305,6 +1307,7 @@
 #define GPIO68_MMCCS1		68	/* MMC Chip Select 1 */
 #define GPIO69_LDD_11		69	/* LCD data pin 11 */
 #define GPIO69_MMCCLK		69	/* MMC_CLK */
+#define GPIO69_KBD_PWR		69	/* HTC Athena Keyboard Power */
 #define GPIO70_LDD_12		70	/* LCD data pin 12 */
 #define GPIO70_RTCCLK		70	/* Real Time clock (1 Hz) */
 #define GPIO71_LDD_13		71	/* LCD data pin 13 */
@@ -1356,8 +1359,10 @@
 #define GPIO6_MMCCLK_MD		( 6 | GPIO_ALT_FN_1_OUT)
 #define GPIO7_48MHz_MD		( 7 | GPIO_ALT_FN_1_OUT)
 #define GPIO8_MMCCS0_MD		( 8 | GPIO_ALT_FN_1_OUT)
+#define GPIO9_KBD_KEY_MD	( 9 | GPIO_ALT_FN_1_IN)
 #define GPIO9_MMCCS1_MD		( 9 | GPIO_ALT_FN_1_OUT)
 #define GPIO10_RTCCLK_MD	(10 | GPIO_ALT_FN_1_OUT)
+#define GPIO1O_KBD_IO_MD	(10 | GPIO_ALT_FN_1_IN)
 #define GPIO11_3_6MHz_MD	(11 | GPIO_ALT_FN_1_OUT)
 #define GPIO12_32KHz_MD		(12 | GPIO_ALT_FN_1_OUT)
 #define GPIO13_MBGNT_MD		(13 | GPIO_ALT_FN_2_OUT)
@@ -1443,6 +1448,7 @@
 #define GPIO68_MMCCS1_MD	(68 | GPIO_ALT_FN_1_OUT)
 #define GPIO69_LDD_11_MD	(69 | GPIO_ALT_FN_2_OUT)
 #define GPIO69_MMCCLK_MD	(69 | GPIO_ALT_FN_1_OUT)
+#define GPIO69_KBD_PWR_MD	(69 | GPIO_ALT_FN_1_OUT)
 #define GPIO70_LDD_12_MD	(70 | GPIO_ALT_FN_2_OUT)
 #define GPIO70_RTCCLK_MD	(70 | GPIO_ALT_FN_1_OUT)
 #define GPIO71_LDD_13_MD	(71 | GPIO_ALT_FN_2_OUT)

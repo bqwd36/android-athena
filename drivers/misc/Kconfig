@@ -219,6 +219,10 @@ config THINKPAD_ACPI_BAY
 
 	  If you are not sure, say Y here.
 
+config LOW_MEMORY_KILLER
+    tristate "Low Memory Killer"
+	  ---help---
+	  Register processes to be killed when memory is low.
 
 config ATMEL_SSC
 	tristate "Device driver for Atmel SSC peripheral"
@@ -231,5 +235,7 @@ config ATMEL_SSC
 	  communications, i.e. I2S, SPI, etc.
 
 	  If unsure, say N.
+
+source drivers/misc/adc/Kconfig
 
 endif # MISC_DEVICES

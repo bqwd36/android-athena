@@ -11,9 +11,14 @@
  */
 
 
-#define PXA_IRQ(x)	(x)
+#ifdef CONFIG_PXA27x
+#define PXA_IRQ_SKIP	0
+#else
+#define PXA_IRQ_SKIP	7
+#endif
 
-#if defined(CONFIG_PXA27x) || defined(CONFIG_PXA3xx)
+#define PXA_IRQ(x)	((x) - PXA_IRQ_SKIP)
+
 #define IRQ_SSP3	PXA_IRQ(0)	/* SSP3 service request */
 #define IRQ_MSL		PXA_IRQ(1)	/* MSL Interface interrupt */
 #define IRQ_USBH2	PXA_IRQ(2)	/* USB Host interrupt 1 (OHCI) */
@@ -21,8 +26,6 @@
 #define IRQ_KEYPAD	PXA_IRQ(4)	/* Key pad controller */
 #define IRQ_MEMSTK	PXA_IRQ(5)	/* Memory Stick interrupt */
 #define IRQ_PWRI2C	PXA_IRQ(6)	/* Power I2C interrupt */
-#endif
-
 #define IRQ_HWUART	PXA_IRQ(7)	/* HWUART Transmit/Receive/Error (PXA26x) */
 #define IRQ_OST_4_11	PXA_IRQ(7)	/* OS timer 4-11 matches (PXA27x) */
 #define	IRQ_GPIO0	PXA_IRQ(8)	/* GPIO0 Edge Detect */
@@ -52,35 +55,28 @@
 #define	IRQ_RTC1Hz	PXA_IRQ(30)	/* RTC HZ Clock Tick */
 #define	IRQ_RTCAlrm	PXA_IRQ(31)	/* RTC Alarm */
 
-#if defined(CONFIG_PXA27x) || defined(CONFIG_PXA3xx)
+#ifdef CONFIG_PXA27x
 #define IRQ_TPM		PXA_IRQ(32)	/* TPM interrupt */
 #define IRQ_CAMERA	PXA_IRQ(33)	/* Camera Interface */
+
+#define PXA_INTERNAL_IRQS 34
+#else
+#define PXA_INTERNAL_IRQS 32
 #endif
 
-#ifdef CONFIG_PXA3xx
-#define IRQ_SSP4	PXA_IRQ(13)	/* SSP4 service request */
-#define IRQ_CIR		PXA_IRQ(34)	/* Consumer IR */
-#define IRQ_TSI		PXA_IRQ(36)	/* Touch Screen Interface (PXA320) */
-#define IRQ_USIM2	PXA_IRQ(38)	/* USIM2 Controller */
-#define IRQ_GRPHICS	PXA_IRQ(39)	/* Graphics Controller */
-#define IRQ_MMC2	PXA_IRQ(41)	/* MMC2 Controller */
-#define IRQ_1WIRE	PXA_IRQ(44)	/* 1-Wire Controller */
-#define IRQ_NAND	PXA_IRQ(45)	/* NAND Controller */
-#define IRQ_USB2	PXA_IRQ(46)	/* USB 2.0 Device Controller */
-#define IRQ_WAKEUP0	PXA_IRQ(49)	/* EXT_WAKEUP0 */
-#define IRQ_WAKEUP1	PXA_IRQ(50)	/* EXT_WAKEUP1 */
-#define IRQ_DMEMC	PXA_IRQ(51)	/* Dynamic Memory Controller */
-#define IRQ_MMC3	PXA_IRQ(55)	/* MMC3 Controller (PXA310) */
-#endif
-
-#define PXA_GPIO_IRQ_BASE	(64)
-#define PXA_GPIO_IRQ_NUM	(128)
-
-#define GPIO_2_x_TO_IRQ(x)	(PXA_GPIO_IRQ_BASE + (x))
+#define GPIO_2_x_TO_IRQ(x)	\
+			PXA_IRQ((x) - 2 + PXA_INTERNAL_IRQS)
 #define IRQ_GPIO(x)	(((x) < 2) ? (IRQ_GPIO0 + (x)) : GPIO_2_x_TO_IRQ(x))
 
-#define IRQ_TO_GPIO_2_x(i)	((i) - PXA_GPIO_IRQ_BASE)
+#define IRQ_TO_GPIO_2_x(i)	\
+			((i) - IRQ_GPIO(2) + 2)
 #define IRQ_TO_GPIO(i)	(((i) < IRQ_GPIO(2)) ? ((i) - IRQ_GPIO0) : IRQ_TO_GPIO_2_x(i))
+
+#if defined(CONFIG_PXA25x)
+#define PXA_LAST_GPIO	84
+#elif defined(CONFIG_PXA27x)
+#define PXA_LAST_GPIO	127
+#endif
 
 /*
  * The next 16 interrupts are for board specific purposes.  Since
@@ -88,7 +84,7 @@
  * these.  If you need more, increase IRQ_BOARD_END, but keep it
  * within sensible limits.
  */
-#define IRQ_BOARD_START		(PXA_GPIO_IRQ_BASE + PXA_GPIO_IRQ_NUM)
+#define IRQ_BOARD_START		(IRQ_GPIO(PXA_LAST_GPIO) + 1)
 #define IRQ_BOARD_END		(IRQ_BOARD_START + 16)
 
 #define IRQ_SA1111_START	(IRQ_BOARD_END)
@@ -180,8 +176,11 @@
 #define NR_IRQS			(IRQ_LOCOMO_SPI_TEND + 1)
 #elif defined(CONFIG_ARCH_LUBBOCK) || \
       defined(CONFIG_MACH_LOGICPD_PXA270) || \
-      defined(CONFIG_MACH_MAINSTONE)
+      defined(CONFIG_MACH_MAINSTONE) || \
+      defined(CONFIG_BOARD_IRQ_MAP_SMALL)
 #define NR_IRQS			(IRQ_BOARD_END)
+#elif defined(CONFIG_BOARD_IRQ_MAP_BIG)
+#define NR_IRQS			(IRQ_BOARD_START + 96)
 #else
 #define NR_IRQS			(IRQ_BOARD_START)
 #endif

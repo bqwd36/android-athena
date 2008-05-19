@@ -1,0 +1,57 @@
+menu "Android"
+
+config ANDROID_BINDER_IPC
+	tristate "Binder IPC Driver"
+	default y
+
+config ANDROID_POWER
+	bool "Android power driver"
+	depends on PM && RTC_CLASS
+	default n
+
+config ANDROID_POWER_STAT
+	bool "Android power driver lock stats"
+	depends on ANDROID_POWER
+	default y
+
+config ANDROID_LOGGER
+	bool "Android log driver"
+	default y
+
+config ANDROID_RAM_CONSOLE
+	bool "RAM buffer console"
+	default n
+
+config ANDROID_RAM_CONSOLE_ENABLE_VERBOSE
+	bool "Enable verbose console messages"
+	default y
+	depends on ANDROID_RAM_CONSOLE
+
+config ANDROID_RAM_CONSOLE_ERROR_CORRECTION
+	bool "Enable error correction"
+	default n
+	select REED_SOLOMON
+	select REED_SOLOMON_ENC8
+	select REED_SOLOMON_DEC8
+
+config ANDROID_RAM_CONSOLE_EARLY_INIT
+	bool "Start ram console early"
+	default n
+	depends on ANDROID_RAM_CONSOLE
+
+config ANDROID_RAM_CONSOLE_EARLY_ADDR
+	hex "RAM console virtual address"
+	default 0
+	depends on ANDROID_RAM_CONSOLE_EARLY_INIT
+
+config ANDROID_RAM_CONSOLE_EARLY_SIZE
+	hex "RAM console buffer size"
+	default 0
+	depends on ANDROID_RAM_CONSOLE_EARLY_INIT
+
+config ANDROID_TIMED_GPIO
+	bool "Android timed gpio driver"
+	depends on GENERIC_GPIO
+	default y
+
+endmenu

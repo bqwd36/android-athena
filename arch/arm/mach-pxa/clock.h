@@ -6,6 +6,7 @@ struct clkops {
 	unsigned long		(*getrate)(struct clk *);
 };
 
+/* Old clk struc. Replaced with struc. below
 struct clk {
 	struct list_head	node;
 	const char		*name;
@@ -16,6 +17,26 @@ struct clk {
 	unsigned int		delay;
 	unsigned int		enabled;
 };
+*/
+
+struct clk {
+	struct list_head	node;
+	struct module		*owner; //Added
+	struct clk		*parent; //Added
+	const char		*name;
+	struct device		*dev;
+	const struct clkops	*ops;
+	int			id; //Added
+	unsigned int		enabled;
+	unsigned int		delay;
+	unsigned long		rate;
+	unsigned long		ctrlbit; //Added
+	unsigned int		cken;
+};
+
+
+extern int clk_register(struct clk *clk);
+extern void clk_unregister(struct clk *clk);
 
 #define INIT_CKEN(_name, _cken, _rate, _delay, _dev)	\
 	{						\

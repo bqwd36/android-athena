@@ -72,6 +72,8 @@ unsigned int get_memclk_frequency_10khz(void)
 }
 EXPORT_SYMBOL(get_memclk_frequency_10khz);
 
+#include <linux/gpiodev2.h>
+struct gpio_ops gpio_desc[16];
 /*
  * Handy function to set GPIO alternate functions
  */

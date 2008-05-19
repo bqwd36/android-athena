@@ -18,6 +18,11 @@ config MMC_DEBUG
 	  This is an option for use by developers; most people should
 	  say N here.  This enables MMC core and driver debugging.
 
+config MMC_ATIW
+	tristate "ATIW SD/MMC support (DEBUG ONLY!!!)"
+	depends on MMC && ATI_W228x	
+	help
+	  This provides support for the ATIW SD/MMC controller
 if MMC
 
 source "drivers/mmc/core/Kconfig"

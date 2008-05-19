@@ -15,6 +15,16 @@ config MFD_SM501
 	  interface. The device may be connected by PCI or local bus with
 	  varying functions enabled.
 
+config HTC_EGPIO
+	tristate "HTC EGPIO support"
+	help
+	    This driver supports the CPLD egpio chip present on
+	    several HTC phones.  It provides basic support for input
+	    pins, output pins, and irqs.
+
+config HTC_ASIC3
+	tristate "HTC ASIC3 support"
+
 endmenu
 
 menu "Multimedia Capabilities Port drivers"

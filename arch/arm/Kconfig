@@ -411,6 +411,13 @@ config ARCH_OMAP
 
 endchoice
 
+config BOARD_IRQ_MAP_BIG
+	bool
+	default n
+	help
+	  Reserve big number of interrupts table enrties for board-specific
+	  needs (currently 96).
+
 source "arch/arm/mach-clps711x/Kconfig"
 
 source "arch/arm/mach-ep93xx/Kconfig"
@@ -1071,6 +1078,8 @@ source "drivers/leds/Kconfig"
 source "drivers/rtc/Kconfig"
 
 source "drivers/dma/Kconfig"
+
+source "drivers/android/Kconfig"
 
 source "drivers/dca/Kconfig"
 

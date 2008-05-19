@@ -136,6 +136,25 @@ void clks_register(struct clk *clks, size_t num)
 	mutex_unlock(&clocks_mutex);
 }
 
+/* New */
+int clk_register(struct clk *clk)
+{
+	mutex_lock(&clocks_mutex);
+	list_add(&clk->node, &clocks);
+	mutex_unlock(&clocks_mutex);
+	return 0;
+}
+EXPORT_SYMBOL(clk_register);
+
+void clk_unregister(struct clk *clk)
+{
+	mutex_lock(&clocks_mutex);
+	list_del(&clk->node);
+	mutex_unlock(&clocks_mutex);
+}
+EXPORT_SYMBOL(clk_unregister);
+/* End New */
+
 static int __init clk_init(void)
 {
 	clks_register(common_clks, ARRAY_SIZE(common_clks));

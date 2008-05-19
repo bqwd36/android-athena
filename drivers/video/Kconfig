@@ -1880,6 +1880,29 @@ config FB_XILINX
 	  framebuffer. ML300 carries a 640*480 LCD display on the board,
 	  ML403 uses a standard DB15 VGA connector.
 
+config FB_HTCATHENA_VSFB
+	tristate "HTC Athena VSFB LCD support /w Page Flipping"
+	depends on FB && MACH_HTCATHENA && LCD_CLASS_DEVICE
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+	---help---
+	  This driver provides primitive support for HTC Athena LCD display and also adds Page Flipping support.
+
+config FB_VSFB
+	tristate "Very Simple FrameBuffer (vsfb) driver"
+	depends on FB
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+	---help---
+	  This is a very simple framebuffer device intended for either
+	  testing devices for which no proper video driver exists or for
+	  use on very simple framebuffers that have been set up by 'bios like'
+	  bootloaders that reserve a block of linear memory for a framebuffer.
+
+	  If unsure, say N.
+
 config FB_VIRTUAL
 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
 	depends on FB
