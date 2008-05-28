@@ -41,7 +41,7 @@
 #include <linux/gpiodev2.h>
 #include <linux/mfd/w228x_base.h> 
 #include <linux/ad7877.h> // struct ad7877_data
-#include <linux/touchscreen-adc.h> // struct tsadc
+#include <linux/touchscreen-adc.h> // struct tsadc_platform_data tsadc
 #include <linux/adc_battery.h> // struct battery_info
 #include <linux/pda_power.h> // struct pda_power_pdata
 #include <linux/htcathena_vsfb.h>
@@ -331,7 +331,7 @@ struct platform_device ssp_device = {
 };
 
 /****************************************************************
- * Touchscreen
+ * AD7877 Chip
  ****************************************************************/
 
 static struct ad7877_platform_data ad7877_data = {
@@ -346,6 +346,10 @@ static struct platform_device ad7877 = {
 	},
 };
 
+/****************************************************************
+ * Touchscreen
+ ****************************************************************/
+
 static struct tsadc_platform_data tsadc = {
 	.pressure_factor = 100000, // XXX - adjust value
 	.max_sense = 4096,
@@ -358,6 +362,11 @@ static struct tsadc_platform_data tsadc = {
 	.z2_pin = "ad7877:z2",
 	.num_xy_samples = 1,
 	.num_z_samples = 1,
+
+	.min_x = 274,
+	.max_x = 3809,
+	.min_y = 280,
+	.max_y = 3759,
 };
 
 static struct resource htcathena_pen_irq = {
@@ -401,7 +410,7 @@ struct fb_fix_screeninfo htcathena_ati2284_fix = {
 	.smem_len	= W2284_YRES_VIRTUAL*W2284_XRES_VIRTUAL*(W2284_BITS_PER_PIXEL/8),
 	.type		= FB_TYPE_PACKED_PIXELS,
 	.visual		= FB_VISUAL_TRUECOLOR,
-	.line_length	= W2284_XRES*(W2284_BITS_PER_PIXEL/8),
+	//.line_length	= W2284_XRES*(W2284_BITS_PER_PIXEL/8),
 	.accel		= FB_ACCEL_NONE,
 	.ypanstep	= 1,
 };
@@ -506,8 +515,8 @@ static struct platform_device power_dev = {
 static struct platform_device *devices[] __initdata = {
 	&htcathena_cpld1,
 	&htcathena_cpld2,
-	&ad7877,
 //	&power_dev,
+	&ad7877,
 	&athena_main_batt,
 	&htcathena_ts,
 //	&htcathena_phone,

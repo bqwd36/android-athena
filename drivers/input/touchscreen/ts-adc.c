@@ -16,6 +16,7 @@
 
 //#define DEBUG
 //#define DEBUG_SAMPLES
+//#define pr_debug(fmt,arg...) if (debug) printk(KERN_INFO fmt,##arg) 
 
 #define DRIVER_NAME "ts-adc"
 
@@ -36,20 +37,17 @@
 #include <asm/irq.h>
 #include <asm/mach/irq.h>
 
-#define BIG_VALUE 999999
+#define BIG_VALUE	999999
+#define SAMPLE_TIMEOUT	20	/* sample every 20ms */
 
-#define SAMPLE_TIMEOUT 20	/* sample every 20ms */
 
 static int debug = 0;
 module_param(debug, int, 0644);
-MODULE_PARM_DESC(debug, "debug level (0-2)");
+MODULE_PARM_DESC(debug, "debug level (0-3)");
 
 static int max_jitter = 0;
 module_param(max_jitter, int, 0644);
 MODULE_PARM_DESC(debug, "override max_jitter as passed in by platform");
-
-#define pr_debug(fmt,arg...) \
-        if (debug) printk(KERN_DEBUG fmt,##arg) 
 
 
 enum touchscreen_state {
@@ -86,14 +84,19 @@ struct ts_adc {
 
 #define delta_within_bounds(x,y,d) ( ((int)((x) - (y)) < (int)(d)) && ((int)((y) - (x)) < (int)(d)) )
 
-static void report_touchpanel(struct ts_adc *ts, int x, int y, int pressure)
+static void report_touchpanel(struct ts_adc *ts, int x, int y, int pressure, struct tsadc_platform_data *params)
 {
-	input_report_key(ts->input, BTN_TOUCH, pressure != 0);
-	input_report_abs(ts->input, ABS_PRESSURE, pressure);
 	if (pressure) {
-		input_report_abs(ts->input, ABS_X, x);
-		input_report_abs(ts->input, ABS_Y, y);
+		if ((x < params->max_x) && (x > params->min_x) && (y < params->max_y) && (y > params->min_y)) {
+			input_report_abs(ts->input, ABS_X, x);
+			input_report_abs(ts->input, ABS_Y, y);
+			input_report_abs(ts->input, ABS_PRESSURE, pressure);
+			input_report_key(ts->input, BTN_TOUCH, 1);
+		}
+	}else{
+		input_report_key(ts->input, BTN_TOUCH, 0);
 	}
+
 	input_sync(ts->input);
 }
 
@@ -103,8 +106,8 @@ void debounce_samples(struct tsadc_platform_data *params, struct adc_sense *pins
 	int i, ptr;
 	int d = max_jitter ? max_jitter : params->max_jitter;
 
-	if (debug > 1) {
-		pr_debug(DRIVER_NAME ": ");
+	if (debug > 2) {
+		printk(DRIVER_NAME ": ");
 		ptr = 0;
 		for (i = 0; i < params->num_xy_samples; i++) {
 			printk("%04d ", pins[ptr++].value);
@@ -158,6 +161,7 @@ void debounce_samples(struct tsadc_platform_data *params, struct adc_sense *pins
 
 	/* Pressure */
 	ptr = params->num_xy_samples * 2;
+
 	/* Discard first sample as unstable if more than one z reading requested */ 
 	if (params->num_z_samples > 1) 
 		ptr++;
@@ -182,10 +186,14 @@ void debounce_samples(struct tsadc_platform_data *params, struct adc_sense *pins
 			pressure = z1;
 	}
 	
-	pr_debug(DRIVER_NAME ": x=%d y=%d z1=%d z2=%d P=%d\n", x, y, z1, z2, pressure);
+	if (debug == 2) {
+		printk(DRIVER_NAME ": y=%d x=%d z1=%d z2=%d P=%d\n", y, x, z1, z2, pressure);
+	} else {
+		pr_debug(DRIVER_NAME ": y=%d x=%d z1=%d z2=%d P=%d\n", y, x, z1, z2, pressure);
+	}
 
-	tp->xd = x;
-	tp->yd = y;
+	tp->yd = (params->max_x - x) + params->min_x;
+	tp->xd = y;
 	tp->pressure = pressure;
 }
 
@@ -219,10 +227,8 @@ static irqreturn_t ts_adc_debounce_isr(int irq, void* data)
 
 static void ts_adc_debounce_work(struct work_struct *work)
 {
-	struct delayed_work *delayed_work = container_of(work,
-	                                         struct delayed_work, work);
-	struct adc_work *adc_work = container_of(delayed_work,
-	                                         struct adc_work, work);
+	struct delayed_work *delayed_work = container_of(work, struct delayed_work, work);
+	struct adc_work *adc_work = container_of(delayed_work, struct adc_work, work);
 	struct platform_device *pdev = adc_work->pdev;
 	struct tsadc_platform_data *params = pdev->dev.platform_data;
 	struct ts_adc *ts = platform_get_drvdata(pdev);
@@ -247,7 +253,7 @@ static void ts_adc_debounce_work(struct work_struct *work)
 	finish_sample = pen_up || (ts_pos.pressure <= params->min_pressure);
 
 	if (finish_sample) {
-		report_touchpanel(ts, 0, 0, 0);
+		report_touchpanel(ts, 0, 0, 0, params);
 		ts->state = STATE_WAIT_FOR_TOUCH;
 		pr_debug(DRIVER_NAME ": Finished to sample, reason: pen_up=%d, pressure=%d <= %u\n", !!pen_up, ts_pos.pressure, params->min_pressure);
 		enable_irq(ts->pen_irq);
@@ -258,12 +264,13 @@ static void ts_adc_debounce_work(struct work_struct *work)
 		else {
 			if (params->delayed_pressure) {
 				if (ts->sample_no == 0)
-					report_touchpanel(ts, ts_pos.xd, ts_pos.yd, 1);
+					report_touchpanel(ts, ts_pos.xd, ts_pos.yd, ts_pos.pressure, params);
 				else
-					report_touchpanel(ts, ts->last_pos.xd, ts->last_pos.yd, 1);
+					report_touchpanel(ts, ts->last_pos.xd, ts->last_pos.yd, ts_pos.pressure, params);
+
 				ts->last_pos = ts_pos;
 			} else {
-				report_touchpanel(ts, ts_pos.xd, ts_pos.yd, 1);
+				report_touchpanel(ts, ts_pos.xd, ts_pos.yd, ts_pos.pressure, params);
 			}
 			ts->sample_no++;
 		}
@@ -292,6 +299,7 @@ static int ts_adc_debounce_probe(struct platform_device *pdev)
 	ts = kzalloc(sizeof(*ts), GFP_KERNEL);
 	if (!ts)
 		return -ENOMEM;
+
 	platform_set_drvdata(pdev, ts);
 
 	pdata->num_xy_samples = pdata->num_xy_samples ?: 10;
@@ -300,40 +308,45 @@ static int ts_adc_debounce_probe(struct platform_device *pdev)
 	ts->pins = kmalloc(sizeof(*ts->pins) * (pdata->num_xy_samples*2 + pdata->num_z_samples*2), GFP_KERNEL);
 	ts->req.senses = ts->pins;
 	ts->req.num_senses = (pdata->num_xy_samples*2 + pdata->num_z_samples*2);
+
 	i = 0;
+
 	fill_pins(ts->pins, i, pdata->num_xy_samples, pdata->x_pin);
-	fill_pins(ts->pins, i += pdata->num_xy_samples, 
-		pdata->num_xy_samples, pdata->y_pin);
-	fill_pins(ts->pins, i += pdata->num_xy_samples,  
-		pdata->num_z_samples, pdata->z1_pin);
-	fill_pins(ts->pins, i +=  pdata->num_z_samples,  pdata->num_z_samples, pdata->z2_pin);
+	fill_pins(ts->pins, i += pdata->num_xy_samples, pdata->num_xy_samples, pdata->y_pin);
+	fill_pins(ts->pins, i += pdata->num_xy_samples, pdata->num_z_samples, pdata->z1_pin);
+	fill_pins(ts->pins, i +=  pdata->num_z_samples, pdata->num_z_samples, pdata->z2_pin);
+
 	adc_request_register(&ts->req);
 
 	ts->work.pdev = pdev;
 	INIT_DELAYED_WORK(&ts->work.work, ts_adc_debounce_work);
 	ts->wq = create_workqueue(pdev->dev.bus_id);
+
 	if (!ts->wq)
 		return -ESRCH;
 
-        ts->input = input_allocate_device();
-        if (!ts->input)
-                return -ENOMEM;
+	ts->input = input_allocate_device();
+	if (!ts->input)
+		return -ENOMEM;
 
 	ts->input->name = DRIVER_NAME;
 	ts->input->phys = "touchscreen/adc";
 
-	set_bit(EV_ABS, ts->input->evbit);
-	set_bit(EV_KEY, ts->input->evbit);
-	set_bit(ABS_X, ts->input->absbit);
-	set_bit(ABS_Y, ts->input->absbit);
-	set_bit(ABS_PRESSURE, ts->input->absbit);
-	set_bit(BTN_TOUCH, ts->input->keybit);
+	set_bit(EV_ABS, 	ts->input->evbit);
+	set_bit(EV_KEY, 	ts->input->evbit);
+	set_bit(ABS_X, 		ts->input->absbit);
+	set_bit(ABS_Y, 		ts->input->absbit);
+	set_bit(ABS_PRESSURE, 	ts->input->absbit);
+	set_bit(BTN_TOUCH, 	ts->input->keybit);
+
 	ts->input->absmin[ABS_PRESSURE] = 0;
 	ts->input->absmax[ABS_PRESSURE] = 1;
-	ts->input->absmin[ABS_X] = 0;
-	ts->input->absmax[ABS_X] = 0;
-	ts->input->absmin[ABS_Y] = 32767;
-	ts->input->absmax[ABS_Y] = 32767;
+
+	ts->input->absmin[ABS_Y] = pdata->min_y;
+	ts->input->absmax[ABS_Y] = pdata->max_y;
+
+	ts->input->absmin[ABS_X] = pdata->min_x;
+	ts->input->absmax[ABS_X] = pdata->max_x;
 
 	ts->state = STATE_WAIT_FOR_TOUCH;
 

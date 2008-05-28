@@ -5,6 +5,9 @@ struct tsadc_platform_data {
 	int pen_gpio;
 	int (*ispendown)(void);
 
+	//Calibration Data
+	int min_x, max_x, min_y, max_y;
+
 	// Details of touchscreen
 	/* If you know resistance of TS panel, and really want to know 
 	   "resistance of touch" (whatever that is), set this. In use by 
