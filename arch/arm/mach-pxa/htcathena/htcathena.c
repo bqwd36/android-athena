@@ -410,7 +410,7 @@ struct fb_fix_screeninfo htcathena_ati2284_fix = {
 	.smem_len	= W2284_YRES_VIRTUAL*W2284_XRES_VIRTUAL*(W2284_BITS_PER_PIXEL/8),
 	.type		= FB_TYPE_PACKED_PIXELS,
 	.visual		= FB_VISUAL_TRUECOLOR,
-	//.line_length	= W2284_XRES*(W2284_BITS_PER_PIXEL/8),
+	.line_length	= W2284_XRES*(W2284_BITS_PER_PIXEL/8),
 	.accel		= FB_ACCEL_NONE,
 	.ypanstep	= 1,
 };
@@ -460,7 +460,7 @@ static struct platform_device athena_main_batt = {
 /****************************************************************
  * Power management
  ****************************************************************/
-
+/*
 static void set_charge(int flags)
 {
 //	gpio_set_value(EGPIO_NR_HTCAPACHE_USB_PWR
@@ -510,7 +510,7 @@ static struct platform_device power_dev = {
 		.platform_data	= &power_pdata,
 	},
 };
-
+*/
 
 static struct platform_device *devices[] __initdata = {
 	&htcathena_cpld1,

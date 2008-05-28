@@ -35,7 +35,8 @@
 
 
 
-//static struct platform_device *atiw2284_device;
+static int ati2884_setcolreg(u_int regno, u_int red, u_int green, u_int blue, u_int trans, struct fb_info *info);
+static int ati2884_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
 
 static struct fb_ops atiw2284_ops = {
 	.owner		= THIS_MODULE,
@@ -45,33 +46,7 @@ static struct fb_ops atiw2284_ops = {
 	.fb_setcolreg	= ati2884_setcolreg,
 	.fb_pan_display = ati2884_pan_display,
 };
-/*
-struct fb_var_screeninfo atiw2884_var = {
-	.yres		= W2284_YRES, //Height
-	.xres		= W2284_XRES, //Width
-	.yres_virtual	= W2284_YRES_VIRTUAL,
-	.xres_virtual	= W2284_XRES_VIRTUAL,
-	.bits_per_pixel	= W2284_BITS_PER_PIXEL,
-	.red		= { 11, 5, 0 },
-	.green		= {  5, 6, 0 },
-	.blue		= {  0, 5, 0 },
-	.activate	= FB_ACTIVATE_NOW,
-	.height		= -1,
-	.width		= -1,
-	.vmode		= FB_VMODE_NONINTERLACED,
-};
 
-struct fb_fix_screeninfo atiw2884_fix = {
-	.id		= "vsfb",
-	.smem_start	= ATI_FB_SRAM_PADDR,
-	.smem_len	= W2284_YRES_VIRTUAL*W2284_XRES_VIRTUAL*(W2284_BITS_PER_PIXEL/8),
-	.type		= FB_TYPE_PACKED_PIXELS,
-	.visual		= FB_VISUAL_TRUECOLOR,
-	.line_length	= W2284_XRES*(W2284_BITS_PER_PIXEL/8),
-	.accel		= FB_ACCEL_NONE,
-	.ypanstep	= 1,
-};
-*/
 static int ati2884_setcolreg(u_int regno, u_int red, u_int green, u_int blue, u_int trans, struct fb_info *info)
 {
 	if (regno > 16)
@@ -109,10 +84,6 @@ static int atiw2284_probe(struct platform_device *pdev) {
 		return -ENOMEM;
 	}
 
-	//platform_set_drvdata(pdev, fb);
-
-	//fb->info.fix			= atiw2884_fix;
-	//fb->info.var			= atiw2884_var;
 	memcpy (&fb->info.fix, vsfb->fix, sizeof(struct fb_fix_screeninfo));
 	memcpy (&fb->info.var, vsfb->var, sizeof(struct fb_var_screeninfo));
 
@@ -159,26 +130,7 @@ struct platform_driver atiw2284_driver = {
 
 static int __init atiw2284_init(void)
 {
-//	int ret = 0;
-
-//	ret = platform_driver_register (&atiw2284_driver);
 	platform_driver_register(&atiw2284_driver);
-
-/*
-	if (!ret) {
-		atiw2284_device = platform_device_alloc("ATI W2884", 0);
-
-		if (atiw2284_device)
-			ret = platform_device_add(atiw2284_device);
-		else
-			ret = -ENOMEM;
-
-		if (ret) {
-			platform_device_put(atiw2284_device);
-			platform_driver_unregister(&atiw2284_driver);
-		}
-	}
-*/
 	return 0;
 }
 

@@ -1,3 +1,6 @@
+#ifndef _HTCATHENA_VSFB_H
+#define _HTCATHENA_VSFB_H
+
 /* drivers/video/htcathena_vsfb.h
 **
 ** This software is licensed under the terms of the GNU General Public
@@ -69,5 +72,4 @@ struct atiw2284_fb {
 #endif
 };
 
-static int ati2884_setcolreg(u_int regno, u_int red, u_int green, u_int blue, u_int trans, struct fb_info *info);
-static int ati2884_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
+#endif /* _HTCATHENA_VSFB_H */
