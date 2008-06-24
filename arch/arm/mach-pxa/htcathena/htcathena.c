@@ -18,18 +18,17 @@
 #include <linux/gpio_keys.h>
 #include <linux/input.h>
 #include <linux/input_pda.h>
+#include <linux/serial_core.h>
 
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 
 #include <asm/arch/hardware.h>
-#include <asm/arch/pxafb.h>
 #include <asm/arch/pxa-regs.h>
 #include <asm/arch/serial.h>
 #include <asm/arch/mmc.h>
 #include <asm/arch/irda.h>
 #include <asm/arch/ohci.h>
-
 #include <asm/arch/htcathena-gpio.h>
 #include <asm/arch/htcathena-asic.h>
 
@@ -39,12 +38,14 @@
 #include <linux/mfd/htc-egpio.h>
 #include <linux/delay.h>
 #include <linux/gpiodev2.h>
-#include <linux/mfd/w228x_base.h> 
+#include <linux/mfd/w228x_base.h>  //struct atiw_mmc_hwconfig
 #include <linux/ad7877.h> // struct ad7877_data
 #include <linux/touchscreen-adc.h> // struct tsadc_platform_data tsadc
 #include <linux/adc_battery.h> // struct battery_info
 #include <linux/pda_power.h> // struct pda_power_pdata
-#include <linux/htcathena_vsfb.h>
+
+#include "htcathena_vsfb.h"
+#include "htcathena_dpram_core.h"
 
 //#include "htc_bt.h"
 //#include "htc_gps.h"
@@ -52,52 +53,6 @@
 #include "../generic.h"
 
 #if 0
-
-/****************************************************************
- * Phone
- ****************************************************************/
-
-struct phone_funcs {
-        void (*configure) (int state);
-        void (*suspend) (struct platform_device *dev, pm_message_t state);
-        void (*resume) (struct platform_device *dev);
-};
-
-static struct phone_funcs phone_funcs;
-
-static void phone_configure (int state)
-{
-	if (phone_funcs.configure)
-		phone_funcs.configure (state);
-}
-
-static void phone_suspend (struct platform_device *dev, pm_message_t state)
-{
-	if (phone_funcs.suspend)
-		phone_funcs.suspend (dev, state);
-}
-
-static void phone_resume (struct platform_device *dev)
-{
-	if (phone_funcs.resume)
-		phone_funcs.resume (dev);
-}
-
-static struct platform_pxa_serial_funcs pxa_phone_funcs = {
-	.configure = phone_configure,
-	.suspend   = phone_suspend,
-	.resume    = phone_resume,
-};
-
-
-static struct platform_device htcathena_phone = {
-	.name = "htcathena_phone",
-	.dev  = {
-		.platform_data = &phone_funcs,
-		},
-	.id   = -1,
-};
-#endif
 
 /****************************************************************
  * Bluetooth
@@ -149,9 +104,9 @@ static struct platform_device htcathena_bt = {
  ****************************************************************/
 
 struct gps_funcs {
-        void (*configure) (int state);
-        void (*suspend) (struct platform_device *dev, pm_message_t state);
-        void (*resume) (struct platform_device *dev);
+	void (*configure) (int state);
+	void (*suspend) (struct platform_device *dev, pm_message_t state);
+	void (*resume) (struct platform_device *dev);
 };
 
 static struct gps_funcs gps_funcs;
@@ -188,26 +143,31 @@ static struct platform_device htcathena_gps = {
 		},
 	.id   = -1,
 };
+#endif
 
 /****************************************************************
  * GPIO Keys
  ****************************************************************/
 
 static struct gpio_keys_button htcathena_button_table[] = {
-	{KEY_POWER,      GPIO_NR_HTCATHENA_KEY_POWER,       1, "Power button"},
-	{KEY_VOLUMEUP,   GPIO_NR_HTCATHENA_KEY_VOL_UP,      0, "Volume slider (up)"},
-	{KEY_VOLUMEDOWN, GPIO_NR_HTCATHENA_KEY_VOL_DOWN,    0, "Volume slider (down)"},
-	{KEY_CAMERA,     GPIO_NR_HTCATHENA_KEY_CAMERA,      0, "Camera button"},
-	{KEY_RECORD,     GPIO_NR_HTCATHENA_KEY_RECORD,      0, "Record button"},
-	{KEY_WWW,        GPIO_NR_HTCATHENA_KEY_WWW,         0, "WWW button"},
-	{KEY_SEND,       GPIO_NR_HTCATHENA_KEY_SEND,        0, "Send button"},
-	{KEY_END,        GPIO_NR_HTCATHENA_KEY_END,         0, "End button"},
-	{KEY_RIGHT,      GPIO_NR_HTCATHENA_KEY_RIGHT,       1, "Right button"},
-	{KEY_UP,         GPIO_NR_HTCATHENA_KEY_UP,          1, "Up button"},
-	{KEY_LEFT,       GPIO_NR_HTCATHENA_KEY_LEFT,        1, "Left button"},
-	{KEY_DOWN,       GPIO_NR_HTCATHENA_KEY_DOWN,        1, "Down button"},
-	{KEY_KPENTER,    GPIO_NR_HTCATHENA_KEY_ENTER,       1, "Action button"},
-	{229,    3,       0, "Windows Button"},
+
+	{KEY_POWER,		GPIO_NR_HTCATHENA_KEY_POWER,	1, "Power button"},
+
+	{KEY_VOLUMEUP,		GPIO_NR_HTCATHENA_KEY_VOL_UP,	0, "Volume slider (up)"},
+	{KEY_VOLUMEDOWN,	GPIO_NR_HTCATHENA_KEY_VOL_DOWN,	0, "Volume slider (down)"},
+
+	{KEY_RECORD,		GPIO_NR_HTCATHENA_KEY_RECORD,	0, "Record button"},
+	{KEY_WWW,		GPIO_NR_HTCATHENA_KEY_WWW,	0, "WWW button"},
+	{KEY_CAMERA,		GPIO_NR_HTCATHENA_KEY_CAMERA,	0, "Camera button"},
+
+	{KEY_F4,		GPIO_NR_HTCATHENA_KEY_OK,	0, "OK button"},
+	{KEY_F1,		GPIO_NR_HTCATHENA_KEY_WINDOWS,	0, "Windows Button"},
+
+	{KEY_UP,		GPIO_NR_HTCATHENA_KEY_RIGHT,	1, "Up button"},
+	{KEY_LEFT,		GPIO_NR_HTCATHENA_KEY_UP,	1, "Left button"},
+	{KEY_DOWN,		GPIO_NR_HTCATHENA_KEY_LEFT,	1, "Down button"},
+	{KEY_RIGHT,		GPIO_NR_HTCATHENA_KEY_DOWN,	1, "Right button"},
+	{KEY_ENTER,		GPIO_NR_HTCATHENA_KEY_ENTER,	1, "Action button"},
 #if 0
 	{KEY_F8,         GPIO37_HTCATHENA_KEY_PHONE_HANGUP, 0, "Phone hangup button"},
 	{KEY_F10,        GPIO38_HTCATHENA_KEY_CONTACTS,     0, "Contacts button"},
@@ -235,11 +195,11 @@ static struct platform_device htcathena_gpio_keys = {
  ****************************************************************/
 
 static struct resource egpio_cpld2_resources[] = {
-       [0] = {
-              .start = HTCATHENA_EGPIO_CPLD2_BASE_0, // HACK ALERT!
-              .end   = HTCATHENA_EGPIO_CPLD2_BASE_0 + 0x2*2, /* 1 reg  */
-              .flags = IORESOURCE_MEM,
-       },
+	[0] = {
+		.start = HTCATHENA_EGPIO_CPLD2_BASE_0, // HACK ALERT!
+		.end   = HTCATHENA_EGPIO_CPLD2_BASE_0 + 0x2*2, /* 1 reg  */
+		.flags = IORESOURCE_MEM,
+	},
 };
 
 struct htc_egpio_platform_data egpio_cpld2_data = {
@@ -249,21 +209,18 @@ struct htc_egpio_platform_data egpio_cpld2_data = {
 };
 
 struct platform_device htcathena_cpld2 = {
-       .name = "htc-egpio",
-       .id   =  1,
-       .dev  = {
-              .platform_data = &egpio_cpld2_data,
-       },
-       .resource      = egpio_cpld2_resources,
-       .num_resources = ARRAY_SIZE(egpio_cpld2_resources),
+	.name = "htc-egpio",
+	.id   =  1,
+	.dev  = {
+		.platform_data = &egpio_cpld2_data,
+	},
+	.resource      = egpio_cpld2_resources,
+	.num_resources = ARRAY_SIZE(egpio_cpld2_resources),
 };
 
-/*
- * HTC EGPIO on the Xilinx CPLD1
- *
- * 8 16-bit aligned 8-bit registers
- *
- */
+/*******************************************************************
+ * HTC EGPIO on the Xilinx CPLD1 (8 16-bit aligned 8-bit registers)
+ *******************************************************************/
 
 static struct resource egpio_cpld1_resources[] = {
 	[0] = {
@@ -341,7 +298,7 @@ static struct ad7877_platform_data ad7877_data = {
 static struct platform_device ad7877 = {
 	.name = "ad7877",
 	.id = -1,
-	.dev    = {
+	.dev = {
 		.platform_data = &ad7877_data,
 	},
 };
@@ -386,6 +343,37 @@ static struct platform_device htcathena_ts = {
 };
 
 /****************************************************************
+ * GSM via DPRAM
+ ****************************************************************/
+
+struct dpram_platform_data htcathena_dpram_device_data = {
+	.dev_name	= "ttyDPRAM",
+	.power_gpio	= GPIO_NR_HTCATHENA_PHN_POWER,
+	.irq		= IRQ_GPIO(GPIO_NR_HTCATHENA_DPRAM_RDY),
+	.rx_buffer_phys	= 0x10000000,
+	.rx_buffer_size	= 512,
+	.tx_buffer_phys	= 0x10000200,
+	.tx_buffer_size	= 512,
+	.ctrl_phys	= 0x10003fc0,
+	.ctrl_size	= 64,
+};
+
+static struct platform_device htcathena_dpram = {
+	.name		= "htc-dpram",
+	.id		= 0,
+	.dev		= { .platform_data = &htcathena_dpram_device_data, },
+};
+
+/****************************************************************
+ * Phone
+ ****************************************************************/
+
+static struct platform_device htcathena_phone = {
+	.name		= "htc-phone",
+	.id		= -1,
+};
+
+/****************************************************************
  * Graphic/Video
  ****************************************************************/
 
@@ -399,6 +387,7 @@ struct fb_var_screeninfo htcathena_ati2284_var = {
 	.green		= {  5, 6, 0 },
 	.blue		= {  0, 5, 0 },
 	.activate	= FB_ACTIVATE_NOW,
+	.yoffset	= 640,
 	.height		= -1,
 	.width		= -1,
 	.vmode		= FB_VMODE_NONINTERLACED,
@@ -421,11 +410,11 @@ static struct vsfb_deviceinfo htcathena_atiw2284_deviceinfo = {
 };
 
 static struct platform_device htcathena_graphics = {
-        .name           = "ATI W2884",
-        .id             = -1,
-        .dev            = {
-                .platform_data  = &htcathena_atiw2284_deviceinfo,
-        },
+	.name		= "ati-w2884",
+	.id		= -1,
+	.dev		= {
+		.platform_data = &htcathena_atiw2284_deviceinfo,
+	},
 };
 
 /****************************************************************
@@ -519,11 +508,12 @@ static struct platform_device *devices[] __initdata = {
 	&ad7877,
 	&athena_main_batt,
 	&htcathena_ts,
-//	&htcathena_phone,
+	&htcathena_dpram,
+	&htcathena_phone,
 //	&htcathena_flash,
 	&htcathena_gpio_keys,
-	&htcathena_gps,
-	&htcathena_bt,
+//	&htcathena_gps,
+//	&htcathena_bt,
 	&ssp_device,
 	&htcathena_graphics
 };
@@ -531,8 +521,6 @@ static struct platform_device *devices[] __initdata = {
 /****************************************************************
  * USB client controller
  ****************************************************************/
-
-//	.gpio_pullup	= EGPIO1_HTCATHENA_USB_PUEN,
 
 static int athena_ohci_init(struct device *dev)
 {
@@ -560,20 +548,23 @@ static struct pxaohci_platform_data athena_ohci_platform_data = {
 	.power_budget	= 500,	// ???
 };
 
-/* ATI W2284 */
+/****************************************************************
+ * ATI W2284
+ ****************************************************************/
+
 static void athena_atiw228x_sdio_setpower(struct device *dev, unsigned int vdd)
 {
 //	struct pxamci_platform_data* p_d = dev->platform_data;
 
-//        if ((1 << vdd) & p_d->ocr_mask)
-        if ((1 << vdd) & MMC_VDD_32_33)
+//	if ((1 << vdd) & p_d->ocr_mask)
+	if ((1 << vdd) & MMC_VDD_32_33)
 		gpio_set_value(EGPIO1_HTCATHENA_SDIO_POWER, 1);
 	else
 		gpio_set_value(EGPIO1_HTCATHENA_SDIO_POWER, 0);
 }
 
 static struct atiw_mmc_hwconfig athena_atiw_mmc_hwconfig = {
-        .setpower = athena_atiw228x_sdio_setpower,
+	.setpower = athena_atiw228x_sdio_setpower,
 };
 
 static struct w228x_platform_data htcathena_w2284_platform_data = {

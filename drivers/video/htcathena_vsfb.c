@@ -56,18 +56,33 @@ static int ati2884_setcolreg(u_int regno, u_int red, u_int green, u_int blue, u_
 
 	return 0;
 }
-
+/*
 static int ati2884_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
 {
+
+	//struct pxafb_info *fb = container_of(work, struct pxafb_info, task);
+
+	//var->yoffset = 320;
+	//printk("ATI W2884: ati2884_pan_display: var->yoffset = %d\n", var->yoffset);
+
 	if (var->xoffset + var->xres > info->var.xres_virtual || var->yoffset + var->yres > info->var.yres_virtual)
 		return -EINVAL;
 
-	if (var->yoffset == 0) {
-		var->yoffset = 640;
+	if (info->var.yoffset == 0) {
+		//var->yoffset = 640;
+		info->var.yoffset = 320;
+		printk("ATI W2884: ati2884_pan_display: info->var.yoffset = %d\n", info->var.yoffset);
+		//var->yoffset = var->xres * var->yres * (var->bits_per_pixel/8);
 	} else {
-		var->yoffset = 0;
+		info->var.yoffset = 0;
+		printk("ATI W2884: ati2884_pan_display: info->var.yoffset = %d\n", info->var.yoffset);
 	}
 
+	return 0;
+}
+*/
+static int ati2884_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+{
 	return 0;
 }
 
@@ -100,13 +115,14 @@ static int atiw2284_probe(struct platform_device *pdev) {
 	}
 
 	/* Try to map this so we can access it */
-	fb->info.screen_base = ioremap(fb->info.fix.smem_start, fb->info.fix.smem_len);
+	fb->info.screen_base = ioremap_nocache(fb->info.fix.smem_start, fb->info.fix.smem_len);
 	if (!fb->info.screen_base) {
 		release_mem_region(fb->info.fix.smem_start, fb->info.fix.smem_len);
 		return -EIO;
 	}
 
-	fb->flip_offset = fb->info.screen_base;
+	fb->info.var.yoffset = fb->info.var.xres * fb->info.var.yres * (fb->info.var.bits_per_pixel/8);
+	//flip_offset = fb->info.screen_base;
 
 	printk(KERN_INFO "ATI W2884: mmCHIP_ID: 0x%08x\n", fb_readl(fb->reg_base+mmCHIP_ID));
 	printk(KERN_INFO "ATI W2884: Framebuffer at 0x%lx, mapped to 0x%p, size %dk\n", fb->info.fix.smem_start, fb->info.screen_base, fb->info.fix.smem_len/1024);

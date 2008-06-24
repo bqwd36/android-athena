@@ -216,7 +216,8 @@ static int egpio_probe(struct platform_device *pdev)
 	int irq, i, ret;
 	struct gpio_ops ops;
 
-	/* Initialize ei data structure. */obj-$(CONFIG_HTC_EGPIO)		+= htc-egpio.o
+	/* Initialize ei data structure. */
+	//obj-$(CONFIG_HTC_EGPIO)		+= htc-egpio.o
 	ei = kzalloc(sizeof(*ei), GFP_KERNEL);
 	if (!ei)
 		return -ENOMEM;

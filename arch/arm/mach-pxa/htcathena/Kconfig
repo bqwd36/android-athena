@@ -7,20 +7,25 @@ menuconfig MACH_HTCATHENA
 	select ADC
 	select ADC_AD7877
 	select TOUCHSCREEN_ADC
-	select FB_HTCATHENA_VSFB
-	#select HTCATHENA_SOUND
+	select HTCATHENA_VSFB
+	select HTCATHENA_SOUND
 	select MMC_ATIW
 	select KEYBOARD_GPIO
+	#select HTCATHENA_DPRAM
+	#select HTCATHENA_PHONE
 	help
 		Say Y here if you intend to run this kernel on a
 		HTC Athena. Currently there is only basic support
 		for this phone.
 
-#config HTCATHENA_PHONE
-#	tristate "HTC Athena Phone driver"
-#	depends on MACH_HTCATHENA
-#	help
-#	  Experimental driver for the Athena's MSM6275 UMTS chipset.
+config HTCATHENA_VSFB
+	tristate "HTC Athena VSFB LCD support /w Page Flipping"
+	depends on FB && MACH_HTCATHENA && LCD_CLASS_DEVICE
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+	---help---
+	  This driver provides primitive support for HTC Athena LCD display and also adds Page Flipping support.
 
 config HTCATHENA_SOUND
 	tristate "HTC Athena Audio driver"
@@ -28,6 +33,19 @@ config HTCATHENA_SOUND
 	#select SND_AK4641
 	help
 	  Say Y or M if you have a HTC Universal/Athena or other supported device and want audio support
+
+config HTCATHENA_DPRAM
+	tristate "HTC Athena DPRAM driver"
+	depends on MACH_HTCATHENA
+	select SERIAL_CORE
+	help
+	  Experimental driver for the Athena's MSM6275 chipset via DPRAM.
+
+config HTCATHENA_PHONE
+	tristate "HTC Athena Phone driver"
+	depends on (MACH_HTCATHENA && HTCATHENA_DPRAM)
+	help
+	  Experimental driver for the Athena's Phone/Modem.
 
 #config HTCATHENA_BLUETOOTH
 #	tristate "HTC Athena Bluetooth"
